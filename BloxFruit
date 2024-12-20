@@ -1,0 +1,97 @@
+-- Check if already loaded to prevent duplicate GUIs
+if game:GetService("CoreGui"):FindFirstChild("ExploitGui") then
+    game:GetService("CoreGui"):FindFirstChild("ExploitGui"):Destroy()
+end
+
+-- Creating GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ExploitGui"
+local FindFruitButton = Instance.new("TextButton")
+local ServerHopButton = Instance.new("TextButton")
+
+ScreenGui.Parent = game.CoreGui
+
+-- Find Fruit Button
+FindFruitButton.Parent = ScreenGui
+FindFruitButton.Size = UDim2.new(0, 100, 0, 50)
+FindFruitButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+FindFruitButton.Text = "Find Fruit"
+FindFruitButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+-- Server Hop Button
+ServerHopButton.Parent = ScreenGui
+ServerHopButton.Size = UDim2.new(0, 100, 0, 50)
+ServerHopButton.Position = UDim2.new(0.1, 0, 0.2, 0)
+ServerHopButton.Text = "Server Hop"
+ServerHopButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+
+-- Auto-execute function
+local function autoExecute()
+    -- Wait for character to load
+    repeat wait() until game.Players.LocalPlayer.Character
+    wait(1) -- Additional safety wait
+
+    -- Your auto-execute logic here
+    for _, item in pairs(game.Workspace:GetChildren()) do
+        if item:IsA("Tool") then
+            local handle = item:FindFirstChild("Handle")
+            if handle then
+                game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(handle.CFrame)
+                break
+            end
+        end
+    end
+end
+
+-- Run auto-execute when game loads
+if game:IsLoaded() then
+    autoExecute()
+else
+    game.Loaded:Wait()
+    autoExecute()
+end
+
+-- Find Fruit Function
+FindFruitButton.MouseButton1Click:Connect(function()
+    for _, item in pairs(game.Workspace:GetChildren()) do
+        if item:IsA("Tool") then
+            local handle = item:FindFirstChild("Handle")
+            if handle then
+                game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(handle.CFrame)
+                break
+            end
+        end
+    end
+end)
+
+-- Server Hop Function
+ServerHopButton.MouseButton1Click:Connect(function()
+    local TeleportService = game:GetService("TeleportService")
+    local placeId = game.PlaceId
+    
+    local function serverHop()
+        local servers = {}
+        local req = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"))
+        for _, server in pairs(req.data) do
+            if server.playing < server.maxPlayers then
+                table.insert(servers, server.id)
+            end
+        end
+        if #servers > 0 then
+            TeleportService:TeleportToPlaceInstance(placeId, servers[math.random(1, #servers)])
+        end
+    end
+    
+    serverHop()
+end)
+
+-- Save this script to auto-execute after teleport
+if syn then -- For Synapse X
+    syn.queue_on_teleport([[
+        loadstring(game:HttpGet('PUT_YOUR_SCRIPT_URL_HERE'))()
+    ]])
+elseif queue_on_teleport then -- For other exploits
+    queue_on_teleport([[
+        loadstring(game:HttpGet('PUT_YOUR_SCRIPT_URL_HERE'))()
+    ]])
+end
